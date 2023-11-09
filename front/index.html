@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mi Página Web</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        h1 {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        form {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 5px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+        }
+
+        #usuarios {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 5px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mi Aplicación con Frontend y Backend</h1>
+    <button id="cargarDatos">Cargar Datos</button>
+    
+    
+    <div id="usuarios"></div>
+
+    <form id="agregarUsuarioForm">
+        <label for="id">ID del Usuario:</label>
+        <input type="number" id="id" name="id">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre">
+        <label for="apellido">Apellido:</label>
+        <input type="text" id="apellido" name="apellido">
+        <label for="edad">Edad:</label>
+        <input type="number" id="edad" name="edad">
+        <label for="tel">Telefono:</label>
+        <input type="text" id="tel" name="tel" step="0.01">
+        <button id="agregarDatos">Agregar Usuario</button>
+        
+
+    </form>
+
+    <form id="editarUsuarioForm">
+        <label for="usuariosID">ID del Usuario a Editar:</label>
+        <input type="number" id="usuariosID" name="usuariosID">
+        <label for="nuevoNombre">Nuevo Nombre:</label>
+        <input type="text" id="nuevoNombre" name="nuevoNombre">
+        <label for="nuevoApellido">Nuevo Apellido:</label>
+        <input type="text" id="nuevoApellido" name="nuevoApellido">
+        <label for="nuevaEdad">Nueva Edad:</label>
+        <input type="number" id="nuevaEdad" name="edad">
+        <label for="NuevoTel">Nuevo Telefono:</label>
+        <input type="number" id="nuevoTel" name="nuevoTel" step="0.01">
+        <button type="submit">Editar Usuario</button>
+    </form>
+
+    <form id="eliminarUsuarioForm">
+        <label for="usuarioIDEliminar">ID del Usuario a Eliminar:</label>
+        <input type="number" id="usuarioIDEliminar" name="usuarioIDEliminar">
+        <button >Eliminar Usuario</button>
+    </form>
+  
+    <script>
+
+        
+
+        
+        const obtenerUsuarioForm = document.getElementById('obtenerUsuarioForm');
+        const labelDatosObtenidos = document.getElementById('labelDatosObtenidos');
+        const cargarDatos = document.getElementById('cargarDatos');
+        const agregarDatos =document.getElementById('agregarDatos');
+        const agregarUsuarioForm = document.getElementById('agregarUsuarioForm');
+        const eliminarDatos = document.getElementById('eliminarDatos');
+        const usuariosDiv = document.getElementById('usuarios');
+        const editarUsuarioForm = document.getElementById('editarUsuarioForm');
+
+        cargarDatos.addEventListener('click', () => {
+            // Hacer una solicitud GET al backend para obtener los usuarioIDs
+            fetch('/usuarios')
+                .then((response) => response.json())
+                .then((data) => {
+                    // Mostrar los datos en el elemento "usuarioIDs"
+                    usuariosDiv.innerHTML = formatData(data);    
+                })
+                .catch((error) => console.error(error));
+        });
+
+    function formatData(data) {
+        let html = '<ul>';
+        data.forEach((usuarios) => {
+            html += `<li>ID: ${usuarios.id}, Nombre: ${usuarios.nombre}, Apellido: ${usuarios.apellido}, Edad: ${usuarios.edad}, Telefono: ${usuarios.tel}</li>`;
+        });
+        html += '</ul>';
+        return html;
+    }
+
+        agregarDatos.addEventListener('click', () =>{
+            const nuevoUsuario = {
+                id:agregarUsuarioForm.id.value,
+                nombre:agregarUsuarioForm.nombre.value,
+                apellido:agregarUsuarioForm.apellido.value,
+                edad:agregarUsuarioForm.edad.value,
+                tel:agregarUsuarioForm.tel.value
+            }
+
+        fetch('/usuarios/nuevo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(nuevoUsuario)
+        })
+        .then((response) => response.json())
+        .then((data) => {
+            console.log(data);
+            // Realizar acciones necesarias después de agregar el usuarioID
+        })
+        .catch((error) => console.error(error));
+    });
+
+    eliminarUsuarioForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const UsuarioID =eliminarUsuarioForm.usuarioIDEliminar.value;
+
+        fetch(`/usuarios/${UsuarioID}/eliminar`, {
+            method: 'DELETE'
+        })
+        .then((response)=> response.json())
+        .then((data)=>{
+            console.log(data)
+        })
+        .catch((error)=>console.error(error));
+    });
+
+    editarUsuarioForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const usuarioIDs = editarUsuarioForm.usuariosID.value;
+    const datosActualizados = {
+        nombre: editarUsuarioForm.nuevoNombre.value,
+        apellido: editarUsuarioForm.nuevoApellido.value,
+        edad: editarUsuarioForm.nuevaEdad.value,
+        tel: editarUsuarioForm.nuevoTel.value
+    };
+
+    fetch(`/usuarios/${usuarioIDs}/editar`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(datosActualizados)
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        console.log(data);
+        // Realizar acciones necesarias después de editar el usuarioID
+    })
+    .catch((error) => console.error(error));
+});
+
+    </script>
+
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+  
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyAqtXHoHE2QIP2U0EZWhdy3ZnUGKuYoRtE",
+      authDomain: "pentesting-de-grado.firebaseapp.com",
+      projectId: "pentesting-de-grado",
+      storageBucket: "pentesting-de-grado.appspot.com",
+      messagingSenderId: "632562887367",
+      appId: "1:632562887367:web:4ba268d7efd37bc5962ce2",
+      measurementId: "G-3JFWS25CHQ"
+    };
+  
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  </script>
+</body>
+</html>
